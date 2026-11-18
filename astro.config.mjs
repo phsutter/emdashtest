@@ -7,7 +7,7 @@ import { sqlite } from "emdash/db";
 export default defineConfig({
 	output: "server",
     server: {
-      host: true
+      host: "0.0.0.0",
     },
 	adapter: node({
 		mode: "standalone",
