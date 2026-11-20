@@ -29,35 +29,48 @@ const postsWithTags = posts.map((post) => ({
 ---
 
 <Base title="All Posts">
-	<h1>Posts</h1>
+	<header class="archive-head">
+		<h1>Posts</h1>
+		<p>Freshly published stories, insights, and updates.</p>
+	</header>
 
 	{
 		postsWithTags.length === 0 ? (
 			<p>No posts yet.</p>
 		) : (
-			<ul>
+			<ul class="post-grid">
 				{postsWithTags.map(({ post, tags }) => (
-					<li>
-						<a href={`/posts/${post.id}`}>
+					<li class="post-card">
+						<a class="post-card-link" href={`/posts/${post.id}`}>
 							{post.data.featured_image && (
-								<div {...post.edit.featured_image}><Image image={post.data.featured_image} /></div>
+								<div class="post-card-media" {...post.edit.featured_image}>
+									<Image image={post.data.featured_image} />
+								</div>
 							)}
-							<h2 {...post.edit.title}>{post.data.title}</h2>
-						</a>
-						{post.data.excerpt && <p {...post.edit.excerpt}>{post.data.excerpt}</p>}
-						{tags.length > 0 && (
-							<div>
-								{tags.map((t) => (
-									<a href={`/tag/${t.slug}`}>{t.label}</a>
-								))}
+							<div class="post-card-body">
+								<h2 class="post-card-title" {...post.edit.title}>
+									{post.data.title}
+								</h2>
+								{post.data.excerpt && (
+									<p {...post.edit.excerpt}>{post.data.excerpt}</p>
+								)}
+								{tags.length > 0 && (
+									<div class="chip-list">
+										{tags.map((t) => (
+											<a class="chip" href={`/tag/${t.slug}`}>
+												#{t.label}
+											</a>
+										))}
+									</div>
+								)}
 							</div>
-						)}
+						</a>
 					</li>
 				))}
 			</ul>
 		)
 	}
-	<nav aria-label="Pagination">
+	<nav class="pagination" aria-label="Pagination">
 		{cursor && <a href="/posts">First page</a>}
 		{
 			nextCursor && (

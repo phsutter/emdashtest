@@ -4,6 +4,7 @@ import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
 import LiveSearch from "emdash/ui/search";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import "../styles/theme.css";
 
 interface Props {
 	title: string;
@@ -36,6 +37,16 @@ const titleIncludesSiteName =
 const fullTitle = titleIncludesSiteName ? title : `${title} — ${siteTitle}`;
 const pageDescription = description ?? siteTagline;
 const menu = menuResult.data;
+const normalizePath = (path: string) => path.replace(/\/+$/, "") || "/";
+const currentPath = normalizePath(Astro.url.pathname);
+const isCurrentMenuItem = (url: string) => {
+	if (!url.startsWith("/")) return false;
+	const itemPath = normalizePath(url);
+	return (
+		currentPath === itemPath ||
+		(itemPath !== "/" && currentPath.startsWith(`${itemPath}/`))
+	);
+};
 
 const pageCtx = createPublicPageContext({
 	Astro,
@@ -57,83 +68,35 @@ const pageCtx = createPublicPageContext({
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{fullTitle}</title>
+		<script is:inline>
+			(() => {
+				const storageKey = "emdash-theme-preference";
+				const valid = new Set(["system", "dark", "light", "neo-day"]);
+				const savedPreference = localStorage.getItem(storageKey);
+				const preference = valid.has(savedPreference ?? "")
+					? savedPreference
+					: "system";
+				const systemTheme = window.matchMedia("(prefers-color-scheme: light)")
+					.matches
+					? "light"
+					: "dark";
+				const resolvedTheme = preference === "system" ? systemTheme : preference;
+				document.documentElement.dataset.theme = resolvedTheme;
+			})();
+		</script>
 		<EmDashHead page={pageCtx} />
-		<style is:global>
-		:root {
-		--primary: #b08b57;
-		--dark: #222;
-		--light: #fff;
-		--muted: #f5f5f5;
-		}
-
-		body {
-		margin: 0;
-		font-family: Inter, sans-serif;
-		color: var(--dark);
-		background: white;
-		line-height: 1.6;
-		}
-
-		header {
-		background: white;
-		border-bottom: 1px solid #e5e5e5;
-		position: sticky;
-		top: 0;
-		z-index: 100;
-		}
-
-		nav {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 1rem 2rem;
-
-		display: flex;
-		align-items: center;
-		gap: 1.5rem;
-		}
-
-		nav a:first-child {
-		margin-right: auto;
-		}
-
-		nav a {
-		text-decoration: none;
-		color: var(--dark);
-		font-weight: 500;
-		}
-
-		nav a:hover {
-		color: var(--primary);
-		}
-
-		main {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 3rem 2rem;
-		}
-
-		h1,h2,h3 {
-		font-family: Georgia, serif;
-		}
-
-		img {
-		max-width: 100%;
-		height: auto;
-		}
-		</style>
 	</head>
 	<body>
 		<EmDashBodyStart page={pageCtx} />
 
-		<header>
-			<nav>
-				<a href="/">
+		<header class="site-header">
+			<nav class="site-nav">
+				<a href="/" class="site-brand">
 					{
 						siteLogo ? (
 							<img
 								src={siteLogo.url}
 								alt={siteLogo.alt || siteTitle}
-								style="height:48px;width:auto;margin:-8px 0;display:block;"
 							/>
 						) : (
 							siteTitle
@@ -144,6 +107,10 @@ const pageCtx = createPublicPageContext({
 					menu?.items.map((item) => (
 						<a
 							href={item.url}
+							class:list={[
+								"site-nav-link",
+								{ active: isCurrentMenuItem(item.url) },
+							]}
 							target={item.target}
 							rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
 						>
@@ -151,7 +118,18 @@ const pageCtx = createPublicPageContext({
 						</a>
 					))
 				}
-				<LiveSearch placeholder="Search..." collections={["posts", "pages"]} />
+				<label class="theme-picker" for="theme-select">
+					Theme
+					<select id="theme-select" data-theme-select>
+						<option value="system">System</option>
+						<option value="dark">Dark</option>
+						<option value="light">Light</option>
+						<option value="neo-day">Neo Day</option>
+					</select>
+				</label>
+				<div class="search-shell">
+					<LiveSearch placeholder="Search..." collections={["posts", "pages"]} />
+				</div>
 			</nav>
 		</header>
 
@@ -160,5 +138,44 @@ const pageCtx = createPublicPageContext({
 		</main>
 
 		<EmDashBodyEnd page={pageCtx} />
+		<script is:inline>
+			(() => {
+				const storageKey = "emdash-theme-preference";
+				const root = document.documentElement;
+				const select = document.querySelector("[data-theme-select]");
+				if (!(select instanceof HTMLSelectElement)) return;
+				const valid = new Set(["system", "dark", "light", "neo-day"]);
+				const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
+
+				const getSystemTheme = () => (mediaQuery.matches ? "light" : "dark");
+				const getPreference = () => {
+					const saved = localStorage.getItem(storageKey);
+					return valid.has(saved ?? "") ? saved : "system";
+				};
+				const resolveTheme = (preference) =>
+					preference === "system" ? getSystemTheme() : preference;
+				const applyTheme = (preference) => {
+					root.dataset.theme = resolveTheme(preference);
+					select.value = preference;
+				};
+
+				applyTheme(getPreference());
+
+				select.addEventListener("change", () => {
+					const nextPreference = valid.has(select.value)
+						? select.value
+						: "system";
+					localStorage.setItem(storageKey, nextPreference);
+					applyTheme(nextPreference);
+				});
+
+				mediaQuery.addEventListener("change", () => {
+					const preference = getPreference();
+					if (preference === "system") {
+						applyTheme("system");
+					}
+				});
+			})();
+		</script>
 	</body>
 </html>

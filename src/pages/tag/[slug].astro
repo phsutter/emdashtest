@@ -38,35 +38,99 @@ if (Astro.cache?.enabled) {
 	title={`Posts tagged "${term.label}"`}
 	description={`Posts tagged ${term.label}`}
 >
-	<h1>Tag: {term.label}</h1>
+	<header class="archive-head hero-panel tag-hero">
+		<span class="hero-kicker">Tag archive</span>
+		<h1>Tag: {term.label}</h1>
+		<p>All posts associated with this topic.</p>
+		<div class="chip-list">
+			<span class="chip tag-label-chip">#{term.slug}</span>
+			<a class="chip" href="/posts">Browse all posts</a>
+		</div>
+	</header>
 
 	{
 		posts.length === 0 ? (
-			<p>No posts with this tag yet.</p>
+			<section class="content-card tag-empty">
+				<h2>No posts with this tag yet</h2>
+				<p>Try another topic or return to the full post archive.</p>
+				<div class="tag-actions">
+					<a class="chip" href="/posts">All posts</a>
+					<a class="chip" href="/">Home</a>
+				</div>
+			</section>
 		) : (
-			<ul>
+			<ul class="post-grid">
 				{posts.map((post) => (
-					<li>
-						<a href={`/posts/${post.id}`}>
+					<li class="post-card">
+						<a class="post-card-link" href={`/posts/${post.id}`}>
 							{post.data.featured_image && (
-								<div {...post.edit.featured_image}><Image image={post.data.featured_image} /></div>
+								<div class="post-card-media" {...post.edit.featured_image}>
+									<Image image={post.data.featured_image} />
+								</div>
 							)}
-							<h2 {...post.edit.title}>{post.data.title}</h2>
+							<div class="post-card-body">
+								<h2 class="post-card-title" {...post.edit.title}>
+									{post.data.title}
+								</h2>
+								{post.data.excerpt && (
+									<p {...post.edit.excerpt}>{post.data.excerpt}</p>
+								)}
+								{post.data.publishedAt && (
+									<div class="post-card-meta">
+										<time datetime={post.data.publishedAt.toISOString()}>
+											{post.data.publishedAt.toLocaleDateString("en-US", {
+												year: "numeric",
+												month: "short",
+												day: "numeric",
+											})}
+										</time>
+									</div>
+								)}
+							</div>
 						</a>
-						{post.data.excerpt && <p {...post.edit.excerpt}>{post.data.excerpt}</p>}
 					</li>
 				))}
 			</ul>
 		)
 	}
-	<nav aria-label="Pagination">
-		{cursor && <a href={`/tag/${term.slug}`}>First page</a>}
-		{
-			nextCursor && (
-				<a href={`/tag/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}>
-					Next page
-				</a>
-			)
+	{
+		(cursor || nextCursor) && (
+			<nav class="pagination tag-pagination" aria-label="Pagination">
+				{cursor && <a href={`/tag/${term.slug}`}>Newest</a>}
+				{
+					nextCursor && (
+						<a href={`/tag/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}>
+							Older posts
+						</a>
+					)
+				}
+			</nav>
+		)
+	}
+
+	<style>
+		.tag-hero {
+			margin-bottom: 1.4rem;
 		}
-	</nav>
+
+		.tag-label-chip {
+			font-weight: 700;
+		}
+
+		.tag-empty {
+			display: grid;
+			gap: 0.35rem;
+		}
+
+		.tag-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.45rem;
+			margin-top: 0.35rem;
+		}
+
+		.tag-pagination {
+			margin-top: 1.45rem;
+		}
+	</style>
 </Base>

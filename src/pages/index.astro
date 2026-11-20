@@ -19,15 +19,14 @@ if (Astro.cache?.enabled) {
 ---
 
 <Base title={siteTitle} description={siteTagline}>
-  <section class="hero">
-    <div class="hero-content">
-      <h1>{siteTitle}</h1>
-      <p>{siteTagline}</p>
-    </div>
+  <section class="hero-panel">
+    <span class="hero-kicker">Future-ready publishing</span>
+    <h1>{siteTitle}</h1>
+    <p>{siteTagline}</p>
   </section>
 
-  <section>
-    <h2>Aktuelles</h2>
+  <section aria-labelledby="latest-posts">
+    <h2 id="latest-posts">Latest stories</h2>
 
     {
       posts.length === 0 ? (
@@ -38,130 +37,44 @@ if (Astro.cache?.enabled) {
           </a>
         </p>
       ) : (
-        <div class="news-grid">
+        <ul class="post-grid">
           {posts.map((post) => (
-            <article class="news-card">
-              <a href={`/posts/${post.id}`}>
+            <li class="post-card">
+              <a class="post-card-link" href={`/posts/${post.id}`}>
                 {post.data.featured_image && (
-                  <div {...post.edit.featured_image}>
+                  <div class="post-card-media" {...post.edit.featured_image}>
                     <Image image={post.data.featured_image} />
                   </div>
                 )}
 
-                <h3 {...post.edit.title}>
-                  {post.data.title}
-                </h3>
+                <div class="post-card-body">
+                  <h3 class="post-card-title" {...post.edit.title}>
+                    {post.data.title}
+                  </h3>
+
+                  {post.data.excerpt && (
+                    <p {...post.edit.excerpt}>
+                      {post.data.excerpt}
+                    </p>
+                  )}
+
+                  {post.data.publishedAt && (
+                    <div class="post-card-meta">
+                      <time datetime={post.data.publishedAt.toISOString()}>
+                        {post.data.publishedAt.toLocaleDateString("de-CH", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </time>
+                    </div>
+                  )}
+                </div>
               </a>
-
-              {post.data.excerpt && (
-                <p {...post.edit.excerpt}>
-                  {post.data.excerpt}
-                </p>
-              )}
-
-              {post.data.publishedAt && (
-                <time datetime={post.data.publishedAt.toISOString()}>
-                  {post.data.publishedAt.toLocaleDateString("de-CH", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-              )}
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       )
     }
   </section>
-
-  <style>
-    .hero {
-      background:
-        linear-gradient(
-          rgba(0, 0, 0, 0.45),
-          rgba(0, 0, 0, 0.45)
-        ),
-        url("/hero.jpg");
-
-      background-size: cover;
-      background-position: center;
-
-      height: 70vh;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      text-align: center;
-      color: white;
-      border-radius: 12px;
-      margin-bottom: 4rem;
-    }
-
-    .hero-content {
-      max-width: 800px;
-      padding: 2rem;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 5rem);
-      margin-bottom: 1rem;
-    }
-
-    .hero p {
-      font-size: 1.25rem;
-      margin: 0;
-    }
-
-    h2 {
-      margin-bottom: 2rem;
-    }
-
-    .news-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2rem;
-    }
-
-    .news-card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-      transition: transform 0.2s ease;
-    }
-
-    .news-card:hover {
-      transform: translateY(-4px);
-    }
-
-    .news-card a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .news-card h3 {
-      padding: 1rem;
-      margin: 0;
-    }
-
-    .news-card p {
-      padding: 0 1rem;
-    }
-
-    .news-card time {
-      display: block;
-      padding: 1rem;
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    .news-card img {
-      width: 100%;
-      height: 250px;
-      object-fit: cover;
-      display: block;
-    }
-  </style>
 </Base>

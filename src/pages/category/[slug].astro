@@ -35,37 +35,101 @@ if (Astro.cache?.enabled) {
 ---
 
 <Base title={`${term.label} posts`} description={`Posts in ${term.label}`}>
-	<h1>{term.label}</h1>
+	<header class="archive-head hero-panel category-hero">
+		<span class="hero-kicker">Category archive</span>
+		<h1>{term.label}</h1>
+		<p>Posts grouped under this category.</p>
+		<div class="chip-list">
+			<span class="chip category-label-chip">{term.label}</span>
+			<a class="chip" href="/posts">Browse all posts</a>
+		</div>
+	</header>
 
 	{
 		posts.length === 0 ? (
-			<p>No posts in this category yet.</p>
+			<section class="content-card category-empty">
+				<h2>No posts in this category yet</h2>
+				<p>Explore other categories or return to the full post archive.</p>
+				<div class="category-actions">
+					<a class="chip" href="/posts">All posts</a>
+					<a class="chip" href="/">Home</a>
+				</div>
+			</section>
 		) : (
-			<ul>
+			<ul class="post-grid">
 				{posts.map((post) => (
-					<li>
-						<a href={`/posts/${post.id}`}>
+					<li class="post-card">
+						<a class="post-card-link" href={`/posts/${post.id}`}>
 							{post.data.featured_image && (
-								<div {...post.edit.featured_image}><Image image={post.data.featured_image} /></div>
+								<div class="post-card-media" {...post.edit.featured_image}>
+									<Image image={post.data.featured_image} />
+								</div>
 							)}
-							<h2 {...post.edit.title}>{post.data.title}</h2>
+							<div class="post-card-body">
+								<h2 class="post-card-title" {...post.edit.title}>
+									{post.data.title}
+								</h2>
+								{post.data.excerpt && (
+									<p {...post.edit.excerpt}>{post.data.excerpt}</p>
+								)}
+								{post.data.publishedAt && (
+									<div class="post-card-meta">
+										<time datetime={post.data.publishedAt.toISOString()}>
+											{post.data.publishedAt.toLocaleDateString("en-US", {
+												year: "numeric",
+												month: "short",
+												day: "numeric",
+											})}
+										</time>
+									</div>
+								)}
+							</div>
 						</a>
-						{post.data.excerpt && <p {...post.edit.excerpt}>{post.data.excerpt}</p>}
 					</li>
 				))}
 			</ul>
 		)
 	}
-	<nav aria-label="Pagination">
-		{cursor && <a href={`/category/${term.slug}`}>First page</a>}
-		{
-			nextCursor && (
-				<a
-					href={`/category/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}
-				>
-					Next page
-				</a>
-			)
+	{
+		(cursor || nextCursor) && (
+			<nav class="pagination category-pagination" aria-label="Pagination">
+				{cursor && <a href={`/category/${term.slug}`}>Newest</a>}
+				{
+					nextCursor && (
+						<a
+							href={`/category/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}
+						>
+							Older posts
+						</a>
+					)
+				}
+			</nav>
+		)
+	}
+
+	<style>
+		.category-hero {
+			margin-bottom: 1.4rem;
 		}
-	</nav>
+
+		.category-label-chip {
+			font-weight: 700;
+		}
+
+		.category-empty {
+			display: grid;
+			gap: 0.35rem;
+		}
+
+		.category-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.45rem;
+			margin-top: 0.35rem;
+		}
+
+		.category-pagination {
+			margin-top: 1.45rem;
+		}
+	</style>
 </Base>
