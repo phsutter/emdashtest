@@ -21,6 +21,8 @@ A general-purpose starting point for building sites with [EmDash](https://github
 | Static pages | `/:slug` |
 | 404 | fallback |
 
+Homepage content is managed through the **Pages** collection using the `home` entry (`slug: home`), while the route remains `/` via [src/pages/index.astro](./src/pages/index.astro).
+
 ## Infrastructure
 
 - **Runtime:** Node.js

@@ -155,6 +155,28 @@
 	"content": {
 		"pages": [
 			{
+				"id": "home",
+				"slug": "home",
+				"status": "published",
+				"data": {
+					"title": "Welcome to your new site",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Edit this Home page in the admin panel to control the hero section on /. Keep your headline and intro current without touching code.",
+									"_key": "kh1"
+								}
+							],
+							"_key": "kh0"
+						}
+					]
+				}
+			},
+			{
 				"id": "about",
 				"slug": "about",
 				"status": "published",
